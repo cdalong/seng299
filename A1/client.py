@@ -3,6 +3,6 @@ s = socket.socket()
 host = socket.gethostname()
 port = 9999
 address = (host, port)
-msg = 'test 123'
+msg = '/block '
 s.connect(address)
 s.send(msg)
