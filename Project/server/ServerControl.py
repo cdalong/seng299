@@ -5,7 +5,8 @@
 
 #The server will be the central data structure for the chatroom porject
 import socket
-
+from GeneralChatroom import GeneralChatroom
+from Chatroom import Chatroom
 
 class ServerControl(object):
     '''
@@ -20,12 +21,10 @@ class ServerControl(object):
 
     '''
     #this could be moved to the class atrributes set bu the user
-
-
+    general = GeneralChatroom()
 
     def __init__(self):
         #return objects with no populated lists
-
         s = socket.socket()
         host = socket.gethostname()
         port = 9999
@@ -40,12 +39,27 @@ class ServerControl(object):
         self.controlloop(s)
 
     def sendmessage(self, message, clientIP, chatroomName):
-        print("sendmeassage")
+        print("sendmessage")
 
     def receivemessage(self, message, clientIP, chatroomName):
         print("receivemessage")
 
-    def connectuser(self, clientIP):
+    def connectuser(self, clientIP, chatroom):
+
+        #1. connect to general chat on startup
+        #2. try to connect to room if it exists
+        #3. if not print a message
+
+        if chatroom == 'general':
+            self.general.CurrentClients.append(clientIP)
+            print("added to general")
+        elif chatroom in self.chatroomNames:
+             # add the chatroom
+            print("added to something other than general")
+        else:
+            print("please create a new chatroom with /create")
+
+
         print("connect")
 
     def disconnectuser(self, clientIP):
@@ -59,7 +73,7 @@ class ServerControl(object):
 
     def blockuser(self, clientIP, chatroomName, bannedIP):
 
-        print("blockuser")
+        print("why are you blocking users")
 
     def unblockuser(self, clientIP, chatroomName, bannedIP):
 
@@ -68,22 +82,26 @@ class ServerControl(object):
     def parseinput(self, message, address):
 
 
-        options = {
-            "/block" : self.blockuser(address[0], "test", address[0]),
-            "/create" : self.createchatroom,
-            "/unblock" : self.unblockuser,
-            "/delete" : self.deletechatroom
-        }
+        # I don't want to do a bunch of elifs
 
         if message.startswith('/'):
             command = message.split(' ', 1)[0]
-
-            options[command]
+            print (command)
 
         else:
             #send message, but need the clientIP and shit
             print("no command found")
             self.sendmessage(message)
+            return
+
+        options = {
+
+            '/block': self.blockuser,
+            '/create': self.createchatroom,
+            '/unblock': self.unblockuser,
+            '/delete': self.deletechatroom,
+            '/connect': self.connectuser
+        }[command](address[0], message.split(' ',1)[1])
 
     def controlloop(self, s):
         # type: () -> object
