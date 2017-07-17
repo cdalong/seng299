@@ -1,8 +1,8 @@
 # Client.py
 # SENG 299 chatroom project
 
-from socket import gethostname, gethostbyname
 import ServerControl.py
+import sys, socket
 
 class Client():
 	def __init__(self):
@@ -14,19 +14,29 @@ class Client():
 		##
 		self.ip = gethostbyname(gethostname())
 		self.alias = os.urandom(16)
+		
+	server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	# TODO - what should hostname be set to?
+	server_conn.connect(hostname,9999)
+	
+	list_sockets = [sys.stdin, server_conn]
 
 	#def changeAlias(newAlias):     - update user alias
 
-	def sendMessage(message):
-		print('send message')
-		ServerControl.receiveMessage(ServerControl, message, ip, chatroomID)
-
-	def receiveMessage(message):
-		print('receive message')
-		ServerControl.sendMessage(ServerControl, message, ip, chatroomID)
+	## listen to receive messages
+	while True:
+		read_sockets, write_sockets, error_sockets = select.select(list_sockets, [], [])
+		for sock in read_sockets:
+			if sock is server_conn:
+				msg = sock.recv()
+				sys.stdout.print(msg)
+		for wr in write_sockets:
+			server_conn.sendall(sys.stdin.readline())
 
 	def connect(chatroom):
 		connectUser(ServerControl, ip, chatroom)
 
 	def disconnect():
 		disconnectUser(ServerControl, ip)
+		sys.exit()
