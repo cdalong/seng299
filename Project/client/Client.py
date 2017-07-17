@@ -10,17 +10,12 @@ class Client():
 		## instance of Client stores info:
 		##		ip - user's IP address
 		##		alias - user's current alias
-		##		chatroomID - name of user's current chatroom
-		## when new Client first created, by default they are placed in the general chatroom
-		## and assigned an alias of a random alphanumeric string
+		## when new Client first created, by default they are assigned an alias of a random alphanumeric string
 		##
 		self.ip = gethostbyname(gethostname())
 		self.alias = os.urandom(16)
-		self.chatroomID = 'general'
 
 	#def changeAlias(newAlias):     - update user alias
-
-	#def joinChatroom(chatroomID):   - update user chatroomID
 
 	def sendMessage(message):
 		print('send message')
