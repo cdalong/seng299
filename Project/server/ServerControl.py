@@ -115,6 +115,11 @@ class ServerControl(object):
             '/unblock' : self.unblockuser
             }[command](address[0], message.split(' ', 1)[1], message.split(' ', 1)[2])
 
+    def setalias(self):
+        #todo method stub
+        pass
+
+
     def controlloop(self, s):
         # type: () -> object
 
