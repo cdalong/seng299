@@ -35,25 +35,30 @@ class ServerControl(object):
         self.currentClientIPs = []
         self.currentClientAliases = []
         self.chatroomNames = ['general']
+        #TODO make a list of objects
+        #Move to a list of Objects
         
         self.controlloop(s)
 
     def sendmessage(self, message, clientIP, chatroomName):
+        #receive message with no command
+        #find the chatroom that the IP is associated with
+        #send the message to the IPs in the room
         print("sendmessage")
 
     def receivemessage(self, message, clientIP, chatroomName):
         print("receivemessage")
 
-    def connectuser(self, clientIP, chatroom):
+    def connectuser(self, clientIP, chatroomName):
 
         #1. connect to general chat on startup
         #2. try to connect to room if it exists
         #3. if not print a message
 
-        if chatroom == 'general':
+        if chatroomName == 'general':
             self.general.CurrentClients.append(clientIP)
             print("added to general")
-        elif chatroom in self.chatroomNames:
+        elif chatroomName in self.chatroomNames:
              # add the chatroom
             print("added to something other than general")
         else:
@@ -69,6 +74,9 @@ class ServerControl(object):
         print("createchatroom")
 
     def deletechatroom(self, clientIP, chatroomName):
+        #create chatroom
+        #deletechatroom
+        #
         print("deletechatroom")
 
     def blockuser(self, clientIP, chatroomName, bannedIP):
@@ -95,13 +103,17 @@ class ServerControl(object):
             return
 
         options = {
-
-            '/block': self.blockuser,
             '/create': self.createchatroom,
-            '/unblock': self.unblockuser,
             '/delete': self.deletechatroom,
             '/connect': self.connectuser
         }[command](address[0], message.split(' ',1)[1])
+
+        if command.contains('block'):
+            blocks = {
+
+            '/block' : self.blockuser,
+            '/unblock' : self.unblockuser
+            }[command](address[0], message.split(' ', 1)[1], message.split(' ', 1)[2])
 
     def controlloop(self, s):
         # type: () -> object
