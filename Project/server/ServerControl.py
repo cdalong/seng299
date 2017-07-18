@@ -1,210 +1,174 @@
 # Sever Control.py
 #SENG 299
 #Chatroom project
+
+
 #The server will be the central data structure for the chatroom porject
 import socket
-import urllib2
-import random
-
 from GeneralChatroom import GeneralChatroom
 from Chatroom import Chatroom
 
-
-'''Notes:
-
-Maybe we should have a "find user alias" method to reduce copied code
-
-could be useful to have a isAdmin method as well
-
-
-'''
-
 class ServerControl(object):
-    '''
-    It controls the sending of messages and construction of new chat rooms
+	'''
+	It controls the sending of messages and construction of new chat rooms
+	Will also keep a list of connected clients and their relative information
+	Attributes:
+		currentClientIPs
+		currentClientAliases
+		chatroomNames
+	'''
 
-    Will also keep a list of connected clients and their relative information
-    Attributes:
+	self.generalChatroom = GeneralChatroom()
+	self.currentClients = {}
+	self.chatrooms = []
+	
+	def __init__(self):
+		#return objects with no populated lists
+		s = socket.socket()
+		host = socket.gethostname()
+		port = 9999
+		address = (host, port)
+		s.bind(address)
+		s.listen(5)
 
-        currentClientIPs
-        currentClientAliases
-        chatroomNames
+		self.controlloop(s)
+	
+	# This function returns a chatroom based on its name, and returns None is it doesn't exist.
+	def getChatroom(self,chatroomName)
+		if chatroomName == 'general':
+			return self.generalChatroom
+		else for i in self.chatrooms:
+			if self.chatrooms[i].chatroomName == chatroomName:
+				return self.chatrooms[i]
+		else:
+			return None
+	
+	# This function sends the completed, formatted message to everyone in the given list of clients.
+	def sendmessage(self, message, clients):
+		for i in clients:
+			clients[i].receiveMessage(message)
+		return
 
-    '''
-    #this could be moved to the class atrributes set bu the user
-    general = GeneralChatroom()
-    word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
+	# This function returns the alias of a given IP.
+	def getUserAlias(self,clientIP):
+		return currentClients[clientIP]
+	
+	# This function returns true if the user is the admin of the chatroom and false if they aren't.
+	def isAdmin(self,clientIP,chatroom):
+		if chatroom.chatroomName == 'general':
+			return False
+		elif chatroom.adminIP == clientIP:
+			return True
+		else:
+			return False
+	
+	# This function gets a message from a client and sends it if the person is not banned.
+	def receivemessage(self, message, clientIP, chatroomName):
+		chatroom = self.getChatroom(chatroomName)
+		
+		self.sendmessage(message,clients)
 
-    response = urllib2.urlopen(word_site)
-    WORDS = response.content.splitlines()
-    def __init__(self):
-        #return objects with no populated lists
-        s = socket.socket()
-        host = socket.gethostname()
-        port = 9999
-        address = (host, port)
-        s.bind(address)
-        s.listen(5)
+	# This puts a client within a chatroom if they are not banned.
+	def connectuser(self, clientIP, chatroom):
 
-        general = GeneralChatroom()
+		#1. connect to general chat on startup
+		#2. try to connect to room if it exists
+		#3. if not print a message
 
-        self.connectedClients = {}
-        #make a dictionary
+		# This part needs work
+		if chatroom == 'general':
+			self.generalChatroom.addUser(clientIP)
+		elif chatroom in self.chatroomNames:
+			chatroom.addUser(clientIP)
+		return
 
-        self.chatrooms = {}
-        self.chatrooms['general.name'] = general
+	def disconnectuser(self, clientIP):
+		print("disconnect")
 
-        #chatroom list should maybe be a dictionary where the key is the name
+	# This creates a new chatroom if the name is not taken and assigns the client who issued the command as the admin.
+	def createchatroom(self, clientIP, chatroomName):
+	
+		# This checks if the chatroom name is taken.
+		if(getChatroom(chatroomName) != None):
+			return
+		
+		newChatroom = Chatroom(clientIP,chatroomName)
+		self.chatrooms.append(newChatroom)
+		return
 
-        #TODO make a list of objects
-        #Move to a list of Objects
-        
-        self.controlloop(s)
+	# This deletes a chatroom if it's not General and the client trying to delete it is the admin.
+	def deletechatroom(self, clientIP, chatroomName):
+		chatroom = self.getChatroom(chatroomName)
+		if isAdmin(clientIP,chatroom):
+			self.currentClients.remove(chatroom)
 
-    def sendmessage(self, message, clientIP, chatroom):
-        #receive message with no command
-        #find the chatroom that the IP is associated with
-        #send the message to the IPs in the room
-        print("sendmessage")
+	# This blocks a user from a chatroom if it's not General, the admin is trying to ban someone and they are not bannign themselves.
+	def blockuser(self, clientIP, chatroomName, bannedIP):
+		chatroom = self.getChatroom(chatroomName)
+		if isAdmin(clientIP,chatroom) and clientIP != bannedIP:
+			chatroom.blockUser(bannedIP)
+		return
 
-    def receivemessage(self, message, clientIP, chatroom):
-        print("receivemessage")
+	# This unblocks a user if it's not General and the admin is trying to unblock someone.
+	def unblockuser(self, clientIP, chatroomName, bannedIP):
+		chatroom = self.getChatroom(chatroomName)
+		if isAdmin(clientIP,chatroom):
+			chatroom.unblockUser(bannedIP)
+		return
 
-    def connectuser(self, clientIP, chatroom):
+	# This sets a client's alias
+	def setalias(self,clientIP,newAlias):
+		self.currentClients[clientIP] = newAlias
+		return
 
-        #1. connect to general chat on startup
-        #2. try to connect to room if it exists
-        #3. if not print a message
+	def parseinput(self, message, address):
 
-        if chatroom == 'general':
-            alias = random.choice(self.WORDS.keys())
-            self.general.CurrentClients['clientIP'] = alias
-            self.connectedClients['clientIP'] = alias
+		# I don't want to do a bunch of elifs
 
-            print("added to general")
+		if message.startswith('/'):
+			command = message.split(' ', 1)[0]
+			print (command)
 
-        elif chatroom in self.chatrooms:
-             # add the chatroom
+		else:
+			#send message, but need the clientIP
+			print("no command found")
+			self.sendmessage(message)
+			return
 
-            self.chatrooms[chatroom].currentClients['clientIP'] = self.connectedClients.get('clientIP')
+		options = {
+			'/create': self.createchatroom,
+			'/delete': self.deletechatroom,
+			'/connect': self.connectuser
+		}[command](address[0], message.split(' ',1)[1])
 
-            print("added to something other than general")
-        else:
+		if command.contains('block'):
+			blocks = {
 
-            print("please create a new chatroom with /create")
+			'/block' : self.blockuser,
+			'/unblock' : self.unblockuser
+			}[command](address[0], message.split(' ', 1)[1], message.split(' ', 1)[2])
 
+	def controlloop(self, s):
+		# type: () -> object
 
-        print("connected")
+		#address[0] = local IP
+		#address[1] = socket
+		#message = message obviously
 
-    def disconnectuser(self, clientIP):
+		while True:
+			client, address = s.accept()
+			message = client.recv(1024)
+			print ('%s:%s says >> %s' % (address[0], address[1], message))
 
-        #user sends disconnect commnd
-        #remove them from the connected clients list in server
-        #find the chatroom they are associated with
-        #remove from chatroom
-
-
-
-        print("disconnect")
-
-    def createchatroom(self, clientIP, chatroom):
-
-        newchatroom = Chatroom()
-
-        newchatroom.name = chatroom
-        newchatroom.AdminIP = clientIP
-        newchatroom.currentClients['clientIP'] = self.connectedClients.get('clientIP')
-
-        self.chatrooms.insert(newchatroom)
-        #create a new chatroom object
-        #add to list of chatrooms
-        #add calling user as admin
-
-        #what about people with more than one chat room?
-        #find chatroom they're apart of
-        #remove them from connected clients list
-
-        print("createdchatroom")
-
-    def deletechatroom(self, clientIP, chatroom):
-        #deletechatroom
-        #Receive a delete chatroom message
-        #check if admin of the room
-        #if so, kick everyone out, back to general
-        #remove the room
-
-        #isAdmin?
-
-        if self.chatrooms['']
-
-
-
-        print("deletechatroom")
-
-    def blockuser(self, clientIP, chatroom, bannedIP):
-
-        #add the user to the chatroom block list
-
-        print("why are you blocking users")
-
-    def unblockuser(self, clientIP, chatroom, bannedIP):
-
-        print("unblockuser")
-
-    def parseinput(self, message, address):
-
-
-        # I don't want to do a bunch of elifs
-
-        if message.startswith('/'):
-            command = message.split(' ', 1)[0]
-            print (command)
-
-        else:
-            #send message, but need the clientIP and shit
-            print("no command found")
-            self.sendmessage(message)
-            return
-
-        options = {
-            '/create': self.createchatroom,
-            '/delete': self.deletechatroom,
-            '/connect': self.connectuser
-        }[command](address[0], message.split(' ',1)[1])
-
-        if command.contains('block'):
-            blocks = {
-
-            '/block' : self.blockuser,
-            '/unblock' : self.unblockuser
-            }[command](address[0], message.split(' ', 1)[1], message.split(' ', 1)[2])
-
-    def setalias(self):
-        #todo method stub
-        pass
-
-
-    def controlloop(self, s):
-        # type: () -> object
-
-        #address[0] = local IP
-        #address[1] = socket
-        #message = message obviously
-
-        while True:
-            client, address = s.accept()
-            message = client.recv(1024)
-            print ('%s:%s says >> %s' % (address[0], address[1], message))
-
-            if message is not None:
-                self.parseinput(message, address)
-            message = None
-            address = None
+			if message is not None:
+				self.parseinput(message, address)
+			message = None
+			address = None
 
 
 def main():
 
-    server = ServerControl()
+	server = ServerControl()
 
 if __name__ == "__main__":
-    main()
+	main()
