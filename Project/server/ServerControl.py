@@ -10,6 +10,15 @@ from GeneralChatroom import GeneralChatroom
 from Chatroom import Chatroom
 
 
+'''Notes:
+
+Maybe we should have a "find user alias" method to reduce copied code
+
+could be useful to have a isAdmin method as well
+
+
+'''
+
 class ServerControl(object):
     '''
     It controls the sending of messages and construction of new chat rooms
@@ -41,7 +50,11 @@ class ServerControl(object):
 
         self.connectedClients = {}
         #make a dictionary
-        self.chatrooms = [general]
+
+        self.chatrooms = {}
+        self.chatrooms['general.name'] = general
+
+        #chatroom list should maybe be a dictionary where the key is the name
 
         #TODO make a list of objects
         #Move to a list of Objects
@@ -90,14 +103,28 @@ class ServerControl(object):
         #find the chatroom they are associated with
         #remove from chatroom
 
+
+
         print("disconnect")
 
     def createchatroom(self, clientIP, chatroom):
 
+        newchatroom = Chatroom()
+
+        newchatroom.name = chatroom
+        newchatroom.AdminIP = clientIP
+        newchatroom.currentClients['clientIP'] = self.connectedClients.get('clientIP')
+
+        self.chatrooms.insert(newchatroom)
         #create a new chatroom object
         #add to list of chatrooms
         #add calling user as admin
-        print("createchatroom")
+
+        #what about people with more than one chat room?
+        #find chatroom they're apart of
+        #remove them from connected clients list
+
+        print("createdchatroom")
 
     def deletechatroom(self, clientIP, chatroom):
         #deletechatroom
@@ -105,6 +132,13 @@ class ServerControl(object):
         #check if admin of the room
         #if so, kick everyone out, back to general
         #remove the room
+
+        #isAdmin?
+
+        if self.chatrooms['']
+
+
+
         print("deletechatroom")
 
     def blockuser(self, clientIP, chatroom, bannedIP):
