@@ -1,23 +1,17 @@
 class GeneralChatroom:
 	
+	currentClients = []
+	chatroomName
+	
 	def __init__(self):	
-		self.currentClients = {}
-		self.name = 'general'
+		chatroomName = 'general'
 		return
 	
-	def sendMessage(self,message):
-		MessageList = self.currentClients.keys()
-		return message + MessageList
-	
-	def receiveMessage(self,message,ClientIP):
-		alias = self.currentClients[ClientIP]
-		outputMessage = alias + ": " + message
-		return outputMessage
-	
-	def addUser(self,ip,alias):
-		self.currentClients[ip] = alias
+	def addUser(self,ip):
+		self.currentClients.append(ip)
 		return
 	
 	def removeUser(self,ip):
-		del self.currentClients[ip]
+		if ip in self.currentClients:
+			self.currentClients.remove(ip)
 		return
