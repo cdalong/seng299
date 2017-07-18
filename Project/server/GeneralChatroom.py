@@ -2,6 +2,7 @@ class GeneralChatroom:
 	
 	def __init__(self):	
 		self.currentClients = {}
+		self.name = 'general'
 		return
 	
 	def sendMessage(self,message):
