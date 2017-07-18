@@ -14,11 +14,12 @@ class Client():
 		##
 		self.ip = gethostbyname(gethostname())
 		self.alias = os.urandom(16)
+		self.port = random.randint(5000, 90000)
+		self.host = gethostname()
 		
 	server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	# TODO - what should hostname be set to?
-	server_conn.connect(hostname,9999)
+	server_conn.connect(self.host, self.port)
 	
 	list_sockets = [sys.stdin, server_conn]
 
