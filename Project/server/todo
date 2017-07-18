@@ -1,0 +1,9 @@
+July 18th, 2017
+
+-- re-write the chatroom list to a dictionary
+-- Fix the import from client
+-- User changing the alias how to update multiple dictionaries
+-- Check if banned is in chatroom before you block them - J
+-- move block/unblock to chatroom - J
+-- Client should know what room they are in
+-- Should we have aliases as a key?

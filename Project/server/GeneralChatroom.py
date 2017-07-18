@@ -4,7 +4,7 @@ class GeneralChatroom:
 	chatroomName = ''
 	
 	def __init__(self):
-		chatroomName = 'general'
+		self.chatroomName = 'general'
 		return
 	
 	def addUser(self,ip):

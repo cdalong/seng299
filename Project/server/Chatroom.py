@@ -2,8 +2,6 @@ from GeneralChatroom import GeneralChatroom
 
 class Chatroom(GeneralChatroom):
 
-	self.AdminIP
-	self.blockedClients
 
 	def __init__(self,AdminIP,ChatroomName):
 		GeneralChatroom.__init__(self)
@@ -12,7 +10,7 @@ class Chatroom(GeneralChatroom):
 		self.blockedClients = []
 	
 	def addUser(self,ip):
-		if ip is not in self.blockedClients:
+		if ip not in self.blockedClients:
 			self.currentClients.append(ip)
 			if len(self.currentClients) == 1:
 				self.AdminIP = ip
