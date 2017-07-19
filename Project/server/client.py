@@ -36,7 +36,7 @@ class Client():
                     msg = sock.recv()
                     print(msg)
 
-            characters = raw_input()
+            characters = raw_input("> ")
             server_conn.send(characters)
 
 

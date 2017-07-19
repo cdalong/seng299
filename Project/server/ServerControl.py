@@ -30,6 +30,8 @@ class ServerControl(object):
 		address = (host, port)
 		s.bind(address)
 		s.listen(5)
+		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 		self.generalChatroom = GeneralChatroom()
 		self.currentClients = {} #a dictionary of IP:[chatroom name, alias]
 		self.chatrooms = {}#dictionary of chatroom name:object
@@ -47,8 +49,12 @@ class ServerControl(object):
 	
 	# This function sends the completed, formatted message to everyone in the given list of clients.
 	def sendmessage(self, message, clients):
+		s = socket.socket()
+		print("sending....")
+		print (message)
 		for i in clients:
-			clients[i].receiveMessage(message)
+			s.connect(i)
+			s.send(message)
 		return
 
 	# This function returns the alias of a given IP.
@@ -176,12 +182,26 @@ class ServerControl(object):
 		if message.startswith('/'):
 			command = message.split(' ', 1)[0]
 			print (command)
+			return
+
 
 		else:
 			#send message, but need the clientIP
 			print("no command found")
-			self.sendmessage(message)
-			return
+
+			if address not in self.currentClients:
+				print "please connect to general first"
+
+			else:
+				chatroom = self.getChatroom(self.currentClients[address][1])
+				clientlist = chatroom.CurrentClients
+
+
+			self.sendmessage(message, clientlist)
+
+
+
+
 
 		options = {
 			'/create': self.createchatroom,
@@ -196,6 +216,7 @@ class ServerControl(object):
 			'/unblock' : self.unblockuser
 			}[command](address, message.split(' ', 1)[1], message.split(' ', 1)[2])
 
+		return
 	def controlloop(self, s):
 		# type: () -> object
 
@@ -210,8 +231,8 @@ class ServerControl(object):
 
 			if message is not None:
 				self.parseinput(message, address)
-			message = None
-			address = None
+			#message = None
+			#address = None
 
 
 def main():
