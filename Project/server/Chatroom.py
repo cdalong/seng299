@@ -7,30 +7,30 @@ class Chatroom(GeneralChatroom):
 		GeneralChatroom.__init__(self)
 		self.name = chatroomName
 		self.admin = adminAddr
-		self.curntUsers.append(adminAddr)
+		self.currentClients.append(adminAddr)
 		self.blockedUsers = []
 		
-	def Add_User(self, userAddr):
+	def addUser(self, userAddr):
 		if userAddr not in self.blockedUsers:
-			GeneralChatroom.Add_User(self, userAddr)
+			GeneralChatroom.addUser(self, userAddr)
 		
-	def Remove_User(self, userAddr):
+	def removeUser(self, userAddr):
 		
-		GeneralChatroom.Remove_User(self, userAddr)
+		GeneralChatroom.removeUser(self, userAddr)
 		
 		if userAddr == self.admin:
-			if len(self.curntUsers) != 0:
-				self.admin = self.curntUsers[0] #<-- Python 2.7
+			if len(self.currentClients) != 0:
+				self.admin = self.currentClients[0] #<-- Python 2.7
 			else:
 				self.admin = None
 		
-	def Block_User(self, userAddr, blkrAddr):
+	def blockUser(self, userAddr, blkrAddr):
 		
 		if blkrAddr == self.admin:
-			if userAddr in self.curntUsers:
-				self.blockedUsers[userAddr] = self.curntUsers[userAddr]
+			if userAddr in self.currentClients:
+				self.blockedUsers[userAddr] = self.currentClients[userAddr]
 				
-	def Unblock_User(self, userAddr, unblkrAddr):
+	def unblockUser(self, userAddr, unblkrAddr):
 		
 		if unblkrAddr == self.admin:
 			if userAddr in self.blockedUsers:
