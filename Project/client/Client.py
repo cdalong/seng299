@@ -38,12 +38,14 @@ class Client():
 			if sock is server_conn:
 				msg = sock.recv()
 				print(msg)
-		for wr in write_sockets:
-			server_conn.sendall(sys.stdin.readline())
+			else:
+				server_conn.sendall(sys.stdin.readline())
+		#for wr in write_sockets:
+		#	server_conn.sendall(sys.stdin.readline())
 
-	def connect(self,chatroom):
-		connectuser(ServerControl, self.ip, chatroom)
+	#def connect(self,chatroom):
+	#	connectuser(ServerControl, self.ip, chatroom)
 
-	def disconnect(self):
-		disconnectuser(ServerControl, self.ip)
-		sys.exit()
+	#def disconnect(self):
+	#	disconnectuser(ServerControl, self.ip)
+	#	sys.exit()
