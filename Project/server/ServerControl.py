@@ -144,7 +144,7 @@ class ServerControl(object):
 
 		chatroom = self.getChatroom(chatroomName)
 		if self.isAdmin(clientIP,chatroom):
-			self.currentClients.pop(chatroomName)
+			self.chatrooms.pop(chatroomName)
 
 	# This blocks a user from a chatroom if it's not General, the admin is trying to ban someone and they are not bannign themselves.
 	def blockuser(self, clientIP, chatroomName, bannedIP):
