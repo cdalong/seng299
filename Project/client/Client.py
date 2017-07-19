@@ -2,6 +2,7 @@
 # SENG 299 chatroom project
 
 import sys, socket
+from ServerControl import disconnectuser, connectuser, generatealias
 
 class Client():
 	def __init__(self):
@@ -12,17 +13,23 @@ class Client():
 		## when new Client first created, by default they are assigned an alias of a random alphanumeric string
 		##
 		self.ip = gethostbyname(gethostname())
-		self.alias = os.urandom(16)
+		#self.alias = os.urandom(16)
+		self.alias = generatealias(ServerControl)
 		self.port = random.randint(5000, 90000)
 		self.host = gethostname()
+		self.chatroomID = 'general'
 		
 	server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	server_conn.connect(self.host, self.port)
-	
+	server_conn.connect((server_conn.gethostname(), random.randint(5000, 90000)))
+
 	list_sockets = [sys.stdin, server_conn]
 
-	#def changeAlias(newAlias):     - update user alias
+	def changeAlias(newAlias):     
+		self.alias = newAlias
+
+	def updateChatroom(chatroomName)
+		self.chatroomID = chatroomName
 
 	## listen to receive messages
 	while True:
@@ -35,8 +42,8 @@ class Client():
 			server_conn.sendall(sys.stdin.readline())
 
 	def connect(chatroom):
-		connectUser(ServerControl, ip, chatroom)
+		connectuser(ServerControl, self.ip, chatroom)
 
 	def disconnect():
-		disconnectUser(ServerControl, ip)
+		disconnectuser(ServerControl, self.ip)
 		sys.exit()
