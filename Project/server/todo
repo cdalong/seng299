@@ -7,3 +7,5 @@ July 18th, 2017
 -- move block/unblock to chatroom - J
 -- Client should know what room they are in
 -- Should we have aliases as a key?
+-- Client needs to be able to refer to instance of ServerControl in order to connect/disconnect
+-- Client needs notification from ServerControl when chatroomID or alias has been updated
