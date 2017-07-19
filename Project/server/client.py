@@ -37,7 +37,8 @@ class Client():
                     print(msg)
 
             characters = raw_input("> ")
-            server_conn.send(characters)
+            print(characters)
+            server_conn.sendall(characters)
 
 
 

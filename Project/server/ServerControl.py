@@ -49,12 +49,14 @@ class ServerControl(object):
 	
 	# This function sends the completed, formatted message to everyone in the given list of clients.
 	def sendmessage(self, message, clients):
-		s = socket.socket()
+
 		print("sending....")
 		print (message)
 		for i in clients:
-			s.connect(i)
-			s.send(message)
+			print("client:     ")
+			print(i)
+
+			i.send(message)
 		return
 
 	# This function returns the alias of a given IP.
@@ -92,15 +94,15 @@ class ServerControl(object):
 				alias = random.choice(self.WORDS)
 
 		return alias
-	def connectuser(self, clientIP, chatroom):
+	def connectuser(self, clientIP, chatroom, client):
 
 		#1. connect to general chat on startup
 		#2. try to connect to room if it exists
 		#3. if not print a message
 		if clientIP not in self.currentClients:
 			alias = self.generatealias()
-			self.generalChatroom.addUser(clientIP)
-			self.currentClients[clientIP] = ['general', alias]
+			self.generalChatroom.addUser(client)
+			self.currentClients[clientIP] = ['general', alias, client]
 			print(alias)
 			print (self.currentClients)
 			print (self.chatrooms)
@@ -175,14 +177,14 @@ class ServerControl(object):
 		else:
 			print("alias is in use!")
 
-	def parseinput(self, message, address):
+	def parseinput(self, message, address, client):
 
 		# I don't want to do a bunch of elifs
-
+		command = ''
 		if message.startswith('/'):
 			command = message.split(' ', 1)[0]
 			print (command)
-			return
+
 
 
 		else:
@@ -193,13 +195,13 @@ class ServerControl(object):
 				print "please connect to general first"
 
 			else:
-				chatroom = self.getChatroom(self.currentClients[address][1])
-				clientlist = chatroom.CurrentClients
+				chatroom = self.getChatroom(self.currentClients[address][0])
+				clientlist = chatroom.currentClients
 
 
 			self.sendmessage(message, clientlist)
 
-
+			return
 
 
 
@@ -207,7 +209,7 @@ class ServerControl(object):
 			'/create': self.createchatroom,
 			'/delete': self.deletechatroom,
 			'/connect': self.connectuser
-		}[command](address, message.split(' ',1)[1])
+		}[command](address, message.split(' ',1)[1], client)
 
 		if 'block' in command:
 			blocks = {
@@ -223,16 +225,21 @@ class ServerControl(object):
 		#address[0] = local IP
 		#address[1] = socket
 		#message = message obviously
-
+		client, address = s.accept()
+		#self.generalChatroom.addUser(client)
 		while True:
-			client, address = s.accept()
+			print("1")
+			print(client)
+
 			message = client.recv(1024)
+			print("2")
 			print ('%s:%s says >> %s' % (address[0], address[1], message))
 
 			if message is not None:
-				self.parseinput(message, address)
-			#message = None
-			#address = None
+				self.parseinput(message, address, client)
+				print("inside of loop, waiting for input")
+
+			print ("outside of loop")
 
 
 def main():
