@@ -25,10 +25,10 @@ class Client():
 
 	list_sockets = [sys.stdin, server_conn]
 
-	def changeAlias(newAlias):     
+	def changeAlias(self,newAlias):     
 		self.alias = newAlias
 
-	def updateChatroom(chatroomName)
+	def updateChatroom(self,chatroomName)
 		self.chatroomID = chatroomName
 
 	## listen to receive messages
@@ -41,9 +41,9 @@ class Client():
 		for wr in write_sockets:
 			server_conn.sendall(sys.stdin.readline())
 
-	def connect(chatroom):
+	def connect(self,chatroom):
 		connectuser(ServerControl, self.ip, chatroom)
 
-	def disconnect():
+	def disconnect(self):
 		disconnectuser(ServerControl, self.ip)
 		sys.exit()
