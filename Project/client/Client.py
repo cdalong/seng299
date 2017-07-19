@@ -1,7 +1,6 @@
 # Client.py
 # SENG 299 chatroom project
 
-import ServerControl.py
 import sys, socket
 
 class Client():
@@ -31,7 +30,7 @@ class Client():
 		for sock in read_sockets:
 			if sock is server_conn:
 				msg = sock.recv()
-				sys.stdout.print(msg)
+				print(msg)
 		for wr in write_sockets:
 			server_conn.sendall(sys.stdin.readline())
 
