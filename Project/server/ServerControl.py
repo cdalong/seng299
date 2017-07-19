@@ -164,9 +164,12 @@ class ServerControl(object):
 	def setalias(self,clientIP,newAlias):
 
 		#check if not in the master list of aliases
-
+		oldAlias = self.currentClients[clientIP][1]
+		
 		if newAlias not in self.currentaliases:
 			self.currentClients[clientIP][1] = newAlias
+			self.currentaliases.append(newAlias)
+			self.currentaliases.remove(oldAlias)
 			return
 		else:
 			print("alias is in use!")
