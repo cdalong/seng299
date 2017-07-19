@@ -35,4 +35,3 @@ class Chatroom(GeneralChatroom):
 		if unblkrAddr == self.admin:
 			if userAddr in self.blockedUsers:
 				del self.blockedUsers[userAddr]
-

@@ -1,7 +1,8 @@
 class GeneralChatroom:
 	
 	def __init__(self):
-		self.name = 'General'
+
+		self.name = 'general'
 		self.curntUsers = []
 		
 	def Add_User(self, userAddr):
@@ -10,3 +11,4 @@ class GeneralChatroom:
 	def Remove_User(self, userAddr):
 		if userAddr in self.curntUsers:
 			del self.curntUsers[userAddr]
+

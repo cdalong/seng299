@@ -4,7 +4,7 @@
 
 
 #The server will be the central data structure for the chatroom porject
-import socket
+import socket, urllib2, random
 from GeneralChatroom import GeneralChatroom
 from Chatroom import Chatroom
 
@@ -18,7 +18,10 @@ class ServerControl(object):
 		chatroomNames
 	'''
 
-
+	word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
+	response = urllib2.urlopen(word_site)
+	txt = response.read()
+	WORDS = txt.splitlines()
 	
 	def __init__(self):
 		#return objects with no populated lists
@@ -26,23 +29,26 @@ class ServerControl(object):
 		host = socket.gethostname()
 		port = 9999
 		address = (host, port)
+
+
 		s.bind(address)
 		s.listen(5)
 
 		self.generalChatroom = GeneralChatroom()
-		self.currentClients = {}
-		self.chatrooms = []
+		self.currentClients = {} #a dictionary of IP:[chatroom name, alias]
+		self.chatrooms = {}#dictionary of chatroom name:object
+		self.currentaliases = [] #list of current aliases used by the clients
+		self.chatrooms['general'] = self.generalChatroom
 
 		self.controlloop(s)
-	
+
+
 	# This function returns a chatroom based on its name, and returns None is it doesn't exist.
 	def getChatroom(self, chatroomName):
-		if chatroomName == 'general':
-			return self.generalChatroom
+
+		if chatroomName in self.chatrooms:
+			return self.chatrooms.get(chatroomName)
 		else:
-			for i in self.chatrooms:
-				if self.chatrooms[i].chatroomName == chatroomName:
-					return self.chatrooms[i]
 			return None
 	
 	# This function sends the completed, formatted message to everyone in the given list of clients.
@@ -53,7 +59,7 @@ class ServerControl(object):
 
 	# This function returns the alias of a given IP.
 	def getUserAlias(self,clientIP):
-		return self.currentClients[clientIP]
+		return self.currentClients.get(clientIP)
 	
 	# This function returns true if the user is the admin of the chatroom and false if they aren't.
 	def isAdmin(self,clientIP,chatroom):
@@ -71,21 +77,65 @@ class ServerControl(object):
 		self.sendmessage(message, chatroom.currentClients)
 
 	# This puts a client within a chatroom if they are not banned.
+
+	def generatealias(self):
+
+		alias = random.choice(self.WORDS)
+		flag = False
+
+		while not flag:
+
+			if alias not in self.currentaliases:
+				self.currentaliases.append(alias)
+				flag = True
+			else:
+				alias = random.choice(self.WORDS)
+
+		return alias
 	def connectuser(self, clientIP, chatroom):
 
 		#1. connect to general chat on startup
 		#2. try to connect to room if it exists
 		#3. if not print a message
-
-		# This part needs work
-		if chatroom == 'general':
+		if clientIP not in self.currentClients:
+			alias = self.generatealias()
 			self.generalChatroom.addUser(clientIP)
-		elif chatroom in self.chatroomNames:
-			chatroom.addUser(clientIP)
+			self.currentClients[clientIP] = ['general', alias]
+			print(alias)
+			print (self.currentClients)
+			print (self.chatrooms)
+			print (self.chatrooms['general'].currentClients)
+
+
+		elif chatroom in self.chatrooms:
+
+			#remove from old list of users
+			currentchatroom = self.chatrooms[self.currentClients[clientIP][0]] #find the chatroom name and remove them
+			currentchatroom.removeUser(clientIP)
+
+			#add to new chatroom list of users
+			self.currentClients[clientIP][0] = chatroom
+
+			print (self.currentClients)
+			print (self.chatrooms)
+			print (self.chatrooms['general'].currentClients)
 		return
 
 	def disconnectuser(self, clientIP):
-		print("disconnect")
+
+		#remove user from chatroom list
+
+		currentchatroomname = self.currentClients[clientIP][0]
+
+		currentchatroomobj = self.chatrooms[currentchatroomname]
+
+		currentchatroomobj.removeUser(clientIP)
+
+		#remove user from current Clients
+
+		self.currentClients.pop(clientIP)
+
+		print("you have been disconnected")
 
 	# This creates a new chatroom if the name is not taken and assigns the client who issued the command as the admin.
 	def createchatroom(self, clientIP, chatroomName):
@@ -95,14 +145,15 @@ class ServerControl(object):
 			return
 		
 		newChatroom = Chatroom(clientIP,chatroomName)
-		self.chatrooms.append(newChatroom)
+		self.chatrooms[chatroomName] = newChatroom
 		return
 
 	# This deletes a chatroom if it's not General and the client trying to delete it is the admin.
 	def deletechatroom(self, clientIP, chatroomName):
+
 		chatroom = self.getChatroom(chatroomName)
 		if self.isAdmin(clientIP,chatroom):
-			self.currentClients.remove(chatroom)
+			self.currentClients.pop(chatroomName)
 
 	# This blocks a user from a chatroom if it's not General, the admin is trying to ban someone and they are not bannign themselves.
 	def blockuser(self, clientIP, chatroomName, bannedIP):
@@ -120,8 +171,14 @@ class ServerControl(object):
 
 	# This sets a client's alias
 	def setalias(self,clientIP,newAlias):
-		self.currentClients[clientIP] = newAlias
-		return
+
+		#check if not in the master list of aliases
+
+		if newAlias not in self.currentaliases:
+			self.currentClients[clientIP][1] = newAlias
+			return
+		else:
+			print("alias is in use!")
 
 	def parseinput(self, message, address):
 
@@ -143,7 +200,7 @@ class ServerControl(object):
 			'/connect': self.connectuser
 		}[command](address[0], message.split(' ',1)[1])
 
-		if command.contains('block'):
+		if 'block' in command:
 			blocks = {
 
 			'/block' : self.blockuser,
