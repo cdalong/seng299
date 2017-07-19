@@ -193,12 +193,11 @@ class ServerControl(object):
 				print "please connect to general first"
 
 			else:
-				chatroom = self.getChatroom(self.currentClients[address][1])
+				chatroomName = self.getChatroom(self.currentClients[address][0])
+				chatroom = self.getChatroom(chatroomName)
 				clientlist = chatroom.CurrentClients
-
-
-			self.sendmessage(message, clientlist)
-
+				self.sendmessage(message, clientlist)
+			return
 
 
 
