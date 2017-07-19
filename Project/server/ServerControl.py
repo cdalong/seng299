@@ -17,7 +17,6 @@ class ServerControl(object):
 		currentClientAliases
 		chatroomNames
 	'''
-
 	word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
 	response = urllib2.urlopen(word_site)
 	txt = response.read()
@@ -29,19 +28,14 @@ class ServerControl(object):
 		host = socket.gethostname()
 		port = 9999
 		address = (host, port)
-
-
 		s.bind(address)
 		s.listen(5)
-
 		self.generalChatroom = GeneralChatroom()
 		self.currentClients = {} #a dictionary of IP:[chatroom name, alias]
 		self.chatrooms = {}#dictionary of chatroom name:object
 		self.currentaliases = [] #list of current aliases used by the clients
 		self.chatrooms['general'] = self.generalChatroom
-
 		self.controlloop(s)
-
 
 	# This function returns a chatroom based on its name, and returns None is it doesn't exist.
 	def getChatroom(self, chatroomName):
@@ -124,15 +118,10 @@ class ServerControl(object):
 	def disconnectuser(self, clientIP):
 
 		#remove user from chatroom list
-
 		currentchatroomname = self.currentClients[clientIP][0]
-
 		currentchatroomobj = self.chatrooms[currentchatroomname]
-
 		currentchatroomobj.removeUser(clientIP)
-
 		#remove user from current Clients
-
 		self.currentClients.pop(clientIP)
 
 		print("you have been disconnected")
@@ -198,14 +187,14 @@ class ServerControl(object):
 			'/create': self.createchatroom,
 			'/delete': self.deletechatroom,
 			'/connect': self.connectuser
-		}[command](address[0], message.split(' ',1)[1])
+		}[command](address, message.split(' ',1)[1])
 
 		if 'block' in command:
 			blocks = {
 
 			'/block' : self.blockuser,
 			'/unblock' : self.unblockuser
-			}[command](address[0], message.split(' ', 1)[1], message.split(' ', 1)[2])
+			}[command](address, message.split(' ', 1)[1], message.split(' ', 1)[2])
 
 	def controlloop(self, s):
 		# type: () -> object
