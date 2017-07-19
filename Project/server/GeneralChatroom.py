@@ -1,17 +1,14 @@
 class GeneralChatroom:
 	
-	currentClients = []
-	chatroomName = ''
-	
 	def __init__(self):
-		self.chatroomName = 'general'
-		return
-	
-	def addUser(self,ip):
-		self.currentClients.append(ip)
-		return
-	
-	def removeUser(self,ip):
-		if ip in self.currentClients:
-			self.currentClients.remove(ip)
-		return
+
+		self.name = 'general'
+		self.curntUsers = []
+		
+	def Add_User(self, userAddr):
+		self.curntUsers.append(userAddr)
+		
+	def Remove_User(self, userAddr):
+		if userAddr in self.curntUsers:
+			del self.curntUsers[userAddr]
+

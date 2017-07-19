@@ -1,32 +1,37 @@
+#import random # <-- 3.6 Only
 from GeneralChatroom import GeneralChatroom
 
 class Chatroom(GeneralChatroom):
 
-
-	def __init__(self,AdminIP,ChatroomName):
+	def __init__(self, adminAddr, chatroomName):
 		GeneralChatroom.__init__(self)
-		self.AdminIP = AdminIP
-		self.ChatroomName = ChatroomName
-		self.blockedClients = []
-	
-	def addUser(self,ip):
-		if ip not in self.blockedClients:
-			self.currentClients.append(ip)
-			if len(self.currentClients) == 1:
-				self.AdminIP = ip
-		return
-	
-	def blockUser(self,bannedIP):
-		self.blockedClients.append(bannedIP)
-		self.removeUser(bannedIP)
-		return
-	
-	def unblockUser(self,unbannedIP):
-		self.blockedClients.remove(unbannedIP)
-		return
-	
-	def removeUser(self,ip):
-		GeneralChatroom.removeUser(self,ip)
-		if ip == self.AdminIP and len(self.currentClients) != 0:
-			self.AdminIP = self.currentClients[0]
-		return
+		self.name = chatroomName
+		self.admin = adminAddr
+		self.curntUsers.append(adminAddr)
+		self.blockedUsers = []
+		
+	def Add_User(self, userAddr):
+		if userAddr not in self.blockedUsers:
+			GeneralChatroom.Add_User(self, userAddr)
+		
+	def Remove_User(self, userAddr):
+		
+		GeneralChatroom.Remove_User(self, userAddr)
+		
+		if userAddr == self.admin:
+			if len(self.curntUsers) != 0:
+				self.admin = self.curntUsers[0] #<-- Python 2.7
+			else:
+				self.admin = None
+		
+	def Block_User(self, userAddr, blkrAddr):
+		
+		if blkrAddr == self.admin:
+			if userAddr in self.curntUsers:
+				self.blockedUsers[userAddr] = self.curntUsers[userAddr]
+				
+	def Unblock_User(self, userAddr, unblkrAddr):
+		
+		if unblkrAddr == self.admin:
+			if userAddr in self.blockedUsers:
+				del self.blockedUsers[userAddr]
