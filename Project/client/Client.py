@@ -28,7 +28,7 @@ class Client():
 	def changeAlias(self,newAlias):     
 		self.alias = newAlias
 
-	def updateChatroom(self,chatroomName)
+	def updateChatroom(self,chatroomName):
 		self.chatroomID = chatroomName
 
 	## listen to receive messages
