@@ -125,6 +125,8 @@ class ServerControl(object):
 		self.currentClients.pop(clientIP)
 
 		print("you have been disconnected")
+		if len(currentchatroomobj.currentClients) == 0 and currentchatroomname != 'general':
+			self.currentClients.pop(currentchatroomname)
 
 	# This creates a new chatroom if the name is not taken and assigns the client who issued the command as the admin.
 	def createchatroom(self, clientIP, chatroomName):
