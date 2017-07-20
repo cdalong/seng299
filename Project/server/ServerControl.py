@@ -150,16 +150,34 @@ class ServerControl(object):
 				self.connectUser(i,'general')
 
 	# This blocks a user from a chatroom if it's not General, the admin is trying to ban someone and they are not bannign themselves.
-	def blockuser(self, clientSocket, chatroomName, bannedSocket):
+	def blockuser(self, clientSocket, bannedUserAlias):
+	
+		bannedSocket = None
+		for i in self.CurrentClients:
+			if i[1] == bannedUserAlias:
+				bannedSocket = i
+				break
+	
+		chatroomName = self.CurrentClients[clientSocket][0]
 		chatroom = self.getChatroom(chatroomName)
-		if self.isAdmin(clientSocket,chatroom) and clientSocket != bannedSocket:
+		
+		if bannedSocket != None and self.isAdmin(clientSocket,chatroom) and clientSocket != bannedSocket:
 			chatroom.blockUser(bannedSocket)
 		return
 
 	# This unblocks a user if it's not General and the admin is trying to unblock someone.
-	def unblockuser(self, clientSocket, chatroomName, bannedSocket):
+	def unblockuser(self, clientSocket, bannedUserAlias):
+	
+		bannedSocket = None
+		for i in self.CurrentClients:
+			if i[1] == bannedUserAlias:
+				bannedSocket = i
+				break
+	
+		chatroomName = self.CurrentClients[clientSocket][0]
 		chatroom = self.getChatroom(chatroomName)
-		if self.isAdmin(clientSocket,chatroom):
+		
+		if bannedSocket != None and self.isAdmin(clientSocket,chatroom):
 			chatroom.unblockUser(bannedSocket)
 		return
 
@@ -219,10 +237,21 @@ class ServerControl(object):
 			
 			if currentChatroomName == 'general' or clientSocket not in currentChatroomObj.blockedUsers:	
 				self.sendMessage(message,currentChatroomObj.CurrentClients)
-				
+			
 		else:
 			(function, parameter) = matchobj.groups()
-			################## FIND FUNCTION ###############
+			if function == 'join':
+				self.connect(clientSocket,parameter)
+			elif function == 'create':
+				self.createchatroom(clientSocket,parameter)
+			elif function == 'set_alias':
+				self.setalias(clientSocket,parameter)
+			elif function == 'block':
+				self.block(clientSocket,parameter)
+			elif function == 'unblock':
+				self.unblock(clientSocket,parameter)
+			elif function == 'delete:
+				self.deletechatroom(clientSocket,parameter)
 			return
 		
 	def controlloop(self, s):
