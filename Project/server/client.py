@@ -25,7 +25,7 @@ class Client():
         server_conn.connect((self.host, self.port))
 
         list_sockets = [sys.stdin, server_conn]
-
+        server_conn.sendall("/connect general")
     # def changeAlias(newAlias):     - update user alias
 
     ## listen to receive messages
