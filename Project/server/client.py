@@ -33,11 +33,10 @@ class Client():
             read_sockets, write_sockets, error_sockets = select.select(list_sockets, [], [])
             for sock in read_sockets:
                 if sock is server_conn:
-                    msg = sock.recv()
+                    msg = sock.recv(1024)
                     print(msg)
 
             characters = raw_input("> ")
-            print(characters)
             server_conn.sendall(characters)
 
 
