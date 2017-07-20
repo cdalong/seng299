@@ -48,7 +48,7 @@ class ServerControl(object):
 			return None
 	
 	# This function sends the completed, formatted message to everyone in the given list of clients.
-	def sendmessage(self, message, clients):
+	def sendmessage(self, message, clients, chatroomname, alias):
 
 		print("sending....")
 		print (message)
@@ -56,7 +56,7 @@ class ServerControl(object):
 			print("client:     ")
 			print(i)
 
-			i.sendall(message)
+			i.sendall('%s in %s: %s ' % (alias, chatroomname, message))
 		return
 
 	# This function returns the alias of a given IP.
@@ -197,10 +197,11 @@ class ServerControl(object):
 
 			else:
 				chatroom = self.getChatroom(self.currentClients[address][0])
+				alias = self.currentClients[address][1]
 				clientlist = chatroom.currentClients
 
 
-			self.sendmessage(message, clientlist)
+			self.sendmessage(message, clientlist, chatroom.name, alias)
 
 			return
 
