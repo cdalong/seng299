@@ -4,7 +4,7 @@
 
 
 #The server will be the central data structure for the chatroom porject
-import socket, urllib2, random
+import socket, urllib2, random, sys, threading
 from GeneralChatroom import GeneralChatroom
 from Chatroom import Chatroom
 
@@ -24,20 +24,20 @@ class ServerControl(object):
 	
 	def __init__(self):
 		#return objects with no populated lists
-		s = socket.socket()
-		host = socket.gethostname()
-		port = 9999
-		address = (host, port)
-		s.bind(address)
-		s.listen(5)
-		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.s = socket.socket()
+		self.host = socket.gethostname()
+		self.port = 9999
+		self.address = (self.host, self.port)
+		self.s.bind(self.address)
+		self.s.listen(20)
+		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 		self.generalChatroom = GeneralChatroom()
 		self.currentClients = {} #a dictionary of IP:[chatroom name, alias]
 		self.chatrooms = {} #dictionary of chatroom name:object
 		self.currentaliases = [] #list of current aliases used by the clients
 		self.chatrooms['general'] = self.generalChatroom
-		self.controlloop(s)
+
 
 	# This function returns a chatroom based on its name, and returns None is it doesn't exist.
 	def getChatroom(self, chatroomName):
@@ -232,20 +232,31 @@ class ServerControl(object):
 		return
 
 
-	def controlloop(self, s):
+	def listen(self):
+
+		print("1")
+		while True:
+			client, address = self.s.accept()
+			print("Found a new connection")
+
+			client.settimeout(60)
+			print("spawning a thread")
+
+			thread = threading.Thread(target = self.controlloop, args = (client, address))
+			thread.start()
+	def controlloop(self, client, address):
 		# type: () -> object
 
 		#address[0] = local IP
 		#address[1] = socket
 		#message = message obviously
-		client, address = s.accept()
 		#self.generalChatroom.addUser(client)
 		while True:
-			print("1")
-			print(client)
-
-			message = client.recv(1024)
 			print("2")
+			sys.stdout.flush()
+			message = client.recv(1024)
+
+
 			print ('%s:%s says >> %s' % (address[0], address[1], message))
 
 			if message is not None:
@@ -253,11 +264,11 @@ class ServerControl(object):
 				print("inside of loop, waiting for input")
 
 			print ("outside of loop")
-			s.close()
 
 def main():
 
 	server = ServerControl()
+	server.listen()
 
 if __name__ == "__main__":
 	main()
