@@ -1,9 +1,11 @@
 # Client.py
 # SENG 299 chatroom project
 
+import ServerControl
 import sys, socket
-from ServerControl import disconnectuser, connectuser, generatealias
-
+import random
+import os
+import select
 class Client():
 	def __init__(self):
 		##
@@ -12,40 +14,39 @@ class Client():
 		##		alias - user's current alias
 		## when new Client first created, by default they are assigned an alias of a random alphanumeric string
 		##
-		self.ip = gethostbyname(gethostname())
-		#self.alias = os.urandom(16)
-		self.alias = generatealias(ServerControl)
-		self.port = random.randint(5000, 90000)
-		self.host = gethostname()
-		self.chatroomID = 'general'
+		self.ip = socket.gethostbyname(socket.gethostname())
+		#self.port = random.randint(5000, 90000)
+		self.port = 9999
+		self.host = socket.gethostname()
+		self.address = (host,port)
 		
-	server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	server_conn.connect((server_conn.gethostname(), random.randint(5000, 90000)))
+		'''
+		server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server_conn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		server_conn.connect((self.host, self.port))
+		list_sockets = [sys.stdin, server_conn]
+		'''
+		server_socket = socket.socket()
+		server_socket.connect(address)
+		
 
-	list_sockets = [sys.stdin, server_conn]
-
-	def changeAlias(self,newAlias):     
-		self.alias = newAlias
-
-	def updateChatroom(self,chatroomName):
-		self.chatroomID = chatroomName
-
-	## listen to receive messages
-	while True:
-		read_sockets, write_sockets, error_sockets = select.select(list_sockets, [], [])
-		for sock in read_sockets:
-			if sock is server_conn:
-				msg = sock.recv()
+	## listen to receive messages ########THIS SECTION NEEDS MAJOR WORK#########
+		while True:
+			#read_sockets, write_sockets, error_sockets = select.select(list_sockets, [], [])
+			#for sock in read_sockets:
+			#	if sock is server_conn:
+			msg = sock.recv()
+			if msg is not None:
 				print(msg)
-			else:
-				server_conn.sendall(sys.stdin.readline())
-		#for wr in write_sockets:
-		#	server_conn.sendall(sys.stdin.readline())
+				
+			characters = raw_input("> ")
+			if characters is not None:
+				server_conn.send(characters)
 
-	#def connect(self,chatroom):
-	#	connectuser(ServerControl, self.ip, chatroom)
 
-	#def disconnect(self):
-	#	disconnectuser(ServerControl, self.ip)
-	#	sys.exit()
+
+def main():
+	client = Client()
+
+if __name__ == "__main__":
+	main()
