@@ -36,8 +36,9 @@ class Client():
                     msg = sock.recv(1024)
                     print(msg)
 
-            characters = raw_input("> ")
-            server_conn.sendall(characters)
+                else:
+                    characters = raw_input("> ")
+                    server_conn.sendall(characters)
 
 
 
