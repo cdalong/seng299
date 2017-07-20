@@ -5,10 +5,9 @@ class GeneralChatroom:
 		self.name = 'general'
 		self.currentClients = []
 		
-	def addUser(self, userAddr):
-		self.currentClients.append(userAddr)
+	def addUser(self, userSocket):
+		self.currentClients.append(userSocket)
 		
-	def removeUser(self, userAddr):
+	def removeUser(self, userSocket):
 		if userAddr in self.currentClients:
-			del self.currentClients[userAddr]
-
+			self.currentClients.remove(userSocket)
