@@ -133,6 +133,8 @@ class ServerControl(object):
 		self.currentClients.pop(clientIP)
 
 		print("you have been disconnected")
+		if len(currentchatroomobj.currentClients) == 0 and currentchatroomname != 'general':
+			self.currentClients.pop(currentchatroomname)
 
 	# This creates a new chatroom if the name is not taken and assigns the client who issued the command as the admin.
 	def createchatroom(self, clientIP, chatroomName, client):
@@ -170,10 +172,16 @@ class ServerControl(object):
 	def setalias(self,clientIP,newAlias, client):
 
 		#check if not in the master list of aliases
-
+		oldAlias = self.currentClients[clientIP][1]
+		
 		if newAlias not in self.currentaliases:
 			self.currentClients[clientIP][1] = newAlias
+
 			print('New alias %s' % newAlias)
+
+			self.currentaliases.append(newAlias)
+			self.currentaliases.remove(oldAlias)
+
 			return
 		else:
 			print("alias is in use!")
