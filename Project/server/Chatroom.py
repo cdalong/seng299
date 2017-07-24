@@ -3,11 +3,11 @@ from GeneralChatroom import GeneralChatroom
 
 class Chatroom(GeneralChatroom):
 
-	def __init__(self, adminAddr, chatroomName):
+	def __init__(self, adminAddr, chatroomName, client):
 		GeneralChatroom.__init__(self)
 		self.name = chatroomName
 		self.admin = adminAddr
-		self.currentClients.append(adminAddr)
+		self.currentClients.append(client)
 		self.blockedUsers = []
 		
 	def addUser(self, userAddr):
