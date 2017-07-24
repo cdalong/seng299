@@ -25,7 +25,7 @@ class Client():
         server_conn.connect((self.host, self.port))
 
         list_sockets = [sys.stdin, server_conn]
-
+        server_conn.sendall("/connect general")
     # def changeAlias(newAlias):     - update user alias
 
     ## listen to receive messages
@@ -36,8 +36,9 @@ class Client():
                     msg = sock.recv(1024)
                     print(msg)
 
-            characters = raw_input("> ")
-            server_conn.sendall(characters)
+                else:
+                    characters = raw_input("> ")
+                    server_conn.sendall(characters)
 
 
 
