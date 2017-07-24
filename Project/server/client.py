@@ -15,7 +15,7 @@ class Client():
         ## when new Client first created, by default they are assigned an alias of a random alphanumeric string
         ##
         self.ip = socket.gethostbyname(socket.gethostname())
-        self.alias = os.urandom(16)
+        #self.alias = os.urandom(16)
         #self.port = random.randint(5000, 90000)
         self.port = 9999
         self.host = socket.gethostname()
