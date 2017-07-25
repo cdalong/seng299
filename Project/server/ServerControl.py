@@ -1,6 +1,6 @@
 # Sever Control.py
-#SENG 299
-#Chatroom project
+# SENG 299
+# Chatroom project
 
 
 #The server will be the central data structure for the chatroom porject
@@ -26,14 +26,14 @@ class ServerControl(object):
 		#return objects with no populated lists
 		self.s = socket.socket()
 		self.host = socket.gethostname()
-		self.port = 9999
+		self.port = 9999 #int(sys.argv[1])
 		self.address = (self.host, self.port)
 		self.s.bind(self.address)
 		self.s.listen(20)
 		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 		self.generalChatroom = GeneralChatroom()
-		self.currentClients = {} #a dictionary of IP:[chatroom name, alias]
+		self.currentClients = {} #a dictionary of IP:[chatroom name, alias, socket]
 		self.chatrooms = {} #dictionary of chatroom name:object
 		self.currentaliases = [] #list of current aliases used by the clients
 		self.chatrooms['general'] = self.generalChatroom
@@ -48,23 +48,29 @@ class ServerControl(object):
 			return None
 	
 	# This function sends the completed, formatted message to everyone in the given list of clients.
-	def sendmessage(self, message, clients, chatroomname, alias):
-
-		print("sending....")
-		print (message)
+	def sendmessage(self, message, chatroomname, alias):
+		clients = self.chatrooms[chatroomname].currentClients
+		print ('[%s]:[%s] %s' % (chatroomname, alias, message))
 		for i in clients:
-			print("client:     ")
-			print(i)
-
-			i.sendall('%s in %s: %s ' % (alias, chatroomname, message))
+			i.sendall('[%s]:[%s]: %s ' % (chatroomname, alias, message))
 		return
+	
+	def servermessage(self, message, chatroomname):
+		clients = self.chatrooms[chatroomname].currentClients
+		print ('[%s]:[Server]: %s ' % (chatroomname, message))
+		for i in clients:
+			i.sendall('[%s]:[Server]: %s ' % (chatroomname, message))
+		return
+ 		
+	def returnmessage(self, message, client):
+		client.sendall('\n' + message)
 
 	# This function returns the alias of a given IP.
-	def getUserAlias(self,clientIP):
+	def getUserAlias(self, clientIP):
 		return self.currentClients.get(clientIP)
 	
 	# This function returns true if the user is the admin of the chatroom and false if they aren't.
-	def isAdmin(self,clientIP,chatroom):
+	def isAdmin(self, clientIP, chatroom):
 		if chatroom.name == 'general':
 			return False
 		elif chatroom.admin == clientIP:
@@ -94,6 +100,7 @@ class ServerControl(object):
 				alias = random.choice(self.WORDS)
 
 		return alias
+		
 	def connectuser(self, clientIP, chatroom, client):
 
 		#1. connect to general chat on startup
@@ -103,11 +110,15 @@ class ServerControl(object):
 			alias = self.generatealias()
 			self.generalChatroom.addUser(client)
 			self.currentClients[clientIP] = ['general', alias, client]
-			print(alias)
-			print (self.currentClients)
-			print (self.chatrooms)
-			print (self.chatrooms['general'].currentClients)
-
+			
+			print ('%s Connected' % (alias))
+			self.servermessage(('%s Connected' % (alias)), chatroom)
+			connectionmessage = ('You connected to the general chatroom!\nYour current alias is: %s (Use /set_alias to change it!)' % (alias))
+			self.returnmessage(connectionmessage, client)
+			
+			#print (self.currentClients)
+			#print (self.chatrooms)
+			#print (self.chatrooms['general'].currentClients)
 
 		elif chatroom in self.chatrooms:
 
@@ -169,7 +180,7 @@ class ServerControl(object):
 		return
 
 	# This sets a client's alias
-	def setalias(self,clientIP,newAlias, client):
+	def setalias(self, clientIP, newAlias, client):
 
 		#check if not in the master list of aliases
 		oldAlias = self.currentClients[clientIP][1]
@@ -177,14 +188,15 @@ class ServerControl(object):
 		if newAlias not in self.currentaliases:
 			self.currentClients[clientIP][1] = newAlias
 
-			print('New alias %s' % newAlias)
+			#self.returnmessage(('[Server]: New alias %s' % newAlias), client)
+			self.servermessage(('%s Changed Their Alias To: %s' % (oldAlias, newAlias)), self.currentClients[clientIP][0])
 
 			self.currentaliases.append(newAlias)
 			self.currentaliases.remove(oldAlias)
 
 			return
 		else:
-			print("alias is in use!")
+			self.returnmessage(('[Server]: Alias is in use!'), client)
 
 	def parseinput(self, message, address, client):
 
@@ -194,26 +206,18 @@ class ServerControl(object):
 			command = message.split(' ', 1)[0]
 			print (command)
 
-
-
 		else:
 			#send message, but need the clientIP
-			print("no command found")
 
 			if address not in self.currentClients:
-				print "please connect to general first"
+				print ('please connect to general first')
 
 			else:
 				chatroom = self.getChatroom(self.currentClients[address][0])
 				alias = self.currentClients[address][1]
-				clientlist = chatroom.currentClients
-
-
-			self.sendmessage(message, clientlist, chatroom.name, alias)
-
+				
+			self.sendmessage(message, chatroom.name, alias)
 			return
-
-
 
 		options = {
 			'/create': self.createchatroom,
@@ -234,16 +238,20 @@ class ServerControl(object):
 
 	def listen(self):
 
-		print("1")
+		print ('Chat Server is Online...\nConnect on Port %s' % (self.port))
+		print ('_' * 80 + '\n')
+		
 		while True:
+			
+			print('Found a new connection')
 			client, address = self.s.accept()
-			print("Found a new connection")
-
-			client.settimeout(60)
-			print("spawning a thread")
-
+			client.settimeout(None) #Was 60 but clients timed out after a minute
+			
+			print('Spawning a thread')
+			sys.stdout.flush()
 			thread = threading.Thread(target = self.controlloop, args = (client, address))
 			thread.start()
+			
 	def controlloop(self, client, address):
 		# type: () -> object
 
@@ -252,18 +260,18 @@ class ServerControl(object):
 		#message = message obviously
 		#self.generalChatroom.addUser(client)
 		while True:
-			print("2")
+			#print("2")
 			sys.stdout.flush()
 			message = client.recv(1024)
 
 
-			print ('%s:%s says >> %s' % (address[0], address[1], message))
+			#print ('%s:%s says >> %s' % (address[0], address[1], message))
 
 			if message is not None:
 				self.parseinput(message, address, client)
-				print("inside of loop, waiting for input")
+				#print("inside of loop, waiting for input")
 
-			print ("outside of loop")
+			#print ("outside of loop")
 
 def main():
 
