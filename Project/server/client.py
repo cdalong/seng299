@@ -1,11 +1,8 @@
 # Client.py
 # SENG 299 chatroom project
 
-import ServerControl
-import sys, socket
-import random
-import os
-import select
+import sys, socket, random, os, select
+
 class Client():
     def __init__(self):
         ##
@@ -17,7 +14,7 @@ class Client():
         self.ip = socket.gethostbyname(socket.gethostname())
         #self.alias = os.urandom(16)
         #self.port = random.randint(5000, 90000)
-        self.port = 9999
+        self.port = 9999 #int(sys.argv[1])
         self.host = socket.gethostname()
 
         server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,6 +36,7 @@ class Client():
                 else:
                     characters = raw_input("> ")
                     server_conn.sendall(characters)
+                    print ('\033[A                             \033[A') #print ("\033[1A[\033[2K")
 
 
 
