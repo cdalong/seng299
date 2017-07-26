@@ -10,5 +10,5 @@ class GeneralChatroom:
 		self.currentClients.append(userSocket)
 		
 	def removeUser(self, userSocket):
-		if userAddr in self.currentClients:
+		if userSocket in self.currentClients:
 			del self.currentClients[userSocket]
