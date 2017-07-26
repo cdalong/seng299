@@ -286,7 +286,7 @@ class ServerControl(object):
 			clientSocket, clientAddress = self.s.accept()
 			print("Found a new connection")
 
-			clientSocket.settimeout(60)
+			clientSocket.settimeout(None)
 			print("Spawning a thread")
 
 			thread = threading.Thread(target = self.controlloop, args = (clientSocket, clientAddress))
