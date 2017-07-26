@@ -3,12 +3,12 @@ class GeneralChatroom:
 	def __init__(self):
 
 		self.name = 'general'
+		# This is a list of sockets that are in the chatroom.
 		self.currentClients = []
 		
-	def addUser(self, userAddr):
-		self.currentClients.append(userAddr)
+	def addUser(self, userSocket):
+		self.currentClients.append(userSocket)
 		
-	def removeUser(self, userAddr):
+	def removeUser(self, userSocket):
 		if userAddr in self.currentClients:
-			del self.currentClients[userAddr]
-
+			del self.currentClients[userSocket]

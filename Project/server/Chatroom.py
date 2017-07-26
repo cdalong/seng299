@@ -3,35 +3,36 @@ from GeneralChatroom import GeneralChatroom
 
 class Chatroom(GeneralChatroom):
 
-	def __init__(self, adminAddr, chatroomName, client):
+	def __init__(self, adminSocket, chatroomName, clientSocket):
 		GeneralChatroom.__init__(self)
 		self.name = chatroomName
-		self.admin = adminAddr
-		self.currentClients.append(client)
+		self.adminSocket = adminSocket
+		self.currentClients.append(clientSocket)
+		# This is a list of banned sockets.
 		self.blockedUsers = []
 		
-	def addUser(self, userAddr):
-		if userAddr not in self.blockedUsers:
-			GeneralChatroom.addUser(self, userAddr)
+	def addUser(self, userSocket):
+		if userSocket not in self.blockedUsers:
+			GeneralChatroom.addUser(self, userSocket)
 		
-	def removeUser(self, userAddr):
+	def removeUser(self, userSocket):
 		
-		GeneralChatroom.removeUser(self, userAddr)
+		GeneralChatroom.removeUser(self, userSocket)
 		
-		if userAddr == self.admin:
+		if userSocket == self.adminSocket:
 			if len(self.currentClients) != 0:
 				self.admin = self.currentClients[0] #<-- Python 2.7
 			else:
 				self.admin = None
 		
-	def blockUser(self, userAddr, blkrAddr):
+	def blockUser(self, userSocket, blkrSocket):
 		
-		if blkrAddr == self.admin:
-			if userAddr in self.currentClients:
-				self.blockedUsers[userAddr] = self.currentClients[userAddr]
+		if blkrSocket == self.adminSocket:
+			if userSocket in self.currentClients:
+				self.blockedUsers[userSocket] = self.currentClients[userSocket]
 				
-	def unblockUser(self, userAddr, unblkrAddr):
+	def unblockUser(self, userSocket, unblkrSocket):
 		
-		if unblkrAddr == self.admin:
-			if userAddr in self.blockedUsers:
-				del self.blockedUsers[userAddr]
+		if unblkrSocket == self.adminSocket:
+			if userSocket in self.blockedUsers:
+				del self.blockedUsers[userSocket]
