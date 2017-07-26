@@ -1,6 +1,6 @@
 # Sever Control.py
-#SENG 299
-#Chatroom project
+# SENG 299
+# Chatroom project
 
 
 #The server will be the central data structure for the chatroom porject
@@ -26,13 +26,14 @@ class ServerControl(object):
 		#return objects with no populated lists
 		self.s = socket.socket()
 		self.host = socket.gethostname()
-		self.port = 9999
+		self.port = 9999 #int(sys.argv[1])
 		self.address = (self.host, self.port)
 		self.s.bind(self.address)
 		self.s.listen(20)
 		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 		self.generalChatroom = GeneralChatroom()
+
 		self.currentClients = {} #a dictionary of ClientSocket:[chatroom name, alias]
 		self.chatrooms = {} #dictionary of chatroom name: chatroom object
 		self.currentaliases = [] #list of current aliases used by the clients
@@ -49,16 +50,22 @@ class ServerControl(object):
 			return None
 	
 	# This function sends the completed, formatted message to everyone in the given list of clients.
-	def sendmessage(self, message, clients, chatroomname, alias):
-
-		print("sending....")
-		print (message)
+	def sendmessage(self, message, chatroomname, alias):
+		clients = self.chatrooms[chatroomname].currentClients
+		print ('[%s]:[%s] %s' % (chatroomname, alias, message))
 		for i in clients:
-			print("client:     ")
-			print(i)
-
-			i.sendall('%s in %s: %s' % (alias, chatroomname, message))
+			i.sendall('[%s]:[%s]: %s ' % (chatroomname, alias, message))
 		return
+	
+	def servermessage(self, message, chatroomname):
+		clients = self.chatrooms[chatroomname].currentClients
+		print ('[%s]:[Server]: %s ' % (chatroomname, message))
+		for i in clients:
+			i.sendall('[%s]:[Server]: %s ' % (chatroomname, message))
+		return
+ 		
+	def returnmessage(self, message, client):
+		client.sendall('\n' + message)
 
 	# This function returns the alias of a given IP.
 	def getUserAlias(self,clientSocket):
@@ -94,23 +101,30 @@ class ServerControl(object):
 				alias = random.choice(self.WORDS)
 
 		return alias
-		
+
 	def connectuser(self, clientSocket, chatroomName):
+
 
 		#1. connect to general chat on startup
 		#2. try to connect to room if it exists
 		#3. if not print a message
 		if clientSocket not in self.currentClients:
 			alias = self.generatealias()
-			clientSocket.sendall("Your alias is %s. You can change this at any time." % (alias))
-			self.generalChatroom.addUser(clientSocket)
-			self.currentClients[clientSocket] = ['general', alias]
-			print(alias)
-			print (self.currentClients)
-			print (self.chatrooms)
-			print (self.chatrooms['general'].currentClients)
 
-		elif self.chatrooms.get_key(chatroomName):
+			self.generalChatroom.addUser(client)
+			self.currentClients[clientIP] = ['general', alias, client]
+			
+			print ('%s Connected' % (alias))
+			self.servermessage(('%s Connected' % (alias)), chatroom)
+			connectionmessage = ('You connected to the general chatroom!\nYour current alias is: %s (Use /set_alias to change it!)' % (alias))
+			self.returnmessage(connectionmessage, client)
+			
+			#print (self.currentClients)
+			#print (self.chatrooms)
+			#print (self.chatrooms['general'].currentClients)
+
+		elif chatroom in self.chatrooms:
+
 
 			#remove from old list of users
 			oldChatroomName = self.currentClients[clientSocket][0]
@@ -227,19 +241,25 @@ class ServerControl(object):
 		return
 
 	# This sets a client's alias
+
 	def setalias(self,clientSocket,newAlias):
+
 
 		#check if not in the master list of aliases
 		oldAlias = self.currentClients[clientSocket][1]
 		
 		if newAlias not in self.currentaliases:
-		
-			self.currentClients[clientSocket][1] = newAlias
-			clientSocket.sendall('New alias: %s' % newAlias)
+
+			self.currentClients[clientIP][1] = newAlias
+
+			#self.returnmessage(('[Server]: New alias %s' % newAlias), client)
+			self.servermessage(('%s Changed Their Alias To: %s' % (oldAlias, newAlias)), self.currentClients[clientIP][0])
+
 			self.currentaliases.append(newAlias)
 			self.currentaliases.remove(oldAlias)
 			
 		else:
+
 			clientSocket.sendall("Alias is currently in use!")
 		return
 
@@ -276,10 +296,18 @@ class ServerControl(object):
 			return
 
 
+
 	def listen(self):
 
-		print("1")
+		print ('Chat Server is Online...\nConnect on Port %s' % (self.port))
+		print ('_' * 80 + '\n')
+		
 		while True:
+
+			
+			print('Found a new connection')
+
+
 		
 			# client = socket
 			# address = (IP,port)
@@ -301,17 +329,19 @@ class ServerControl(object):
 		#self.generalChatroom.addUser(client)
 		
 		while True:
-			print("2")
+			#print("2")
 			sys.stdout.flush()
 			message = client.recv(1024)
 
-			print ('%s:%s says >> %s' % (clientAddress[0], clientAddress[1], message))
+
+			#print ('%s:%s says >> %s' % (address[0], address[1], message))
 
 			if message is not None:
-				self.parseinput(message, clientAddress, clientSocket)
-				print("inside of loop, waiting for input")
+				self.parseinput(message, address, client)
+				#print("inside of loop, waiting for input")
 
-			print ("outside of loop")
+
+			#print ("outside of loop")
 
 def main():
 
