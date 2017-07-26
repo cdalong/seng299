@@ -94,18 +94,21 @@ class ServerControl(object):
 				alias = random.choice(self.WORDS)
 
 		return alias
-	def connectuser(self, clientIP, chatroom, client):
+	def connectuser(self, clientIP, chatroom, socketobject):
 
 		#1. connect to general chat on startup
 		#2. try to connect to room if it exists
 		#3. if not print a message
 		if clientIP not in self.currentClients:
 			alias = self.generatealias()
-			self.generalChatroom.addUser(client)
-			self.currentClients[clientIP] = ['general', alias, client]
-			print(alias)
-			print (self.currentClients)
-			print (self.chatrooms)
+			self.generalChatroom.addUser(socketobject)
+			self.currentClients[clientIP] = ['general', alias, socketobject]
+
+			print("%s has joined the general chat" %(alias))
+
+			#print(alias)
+			#print (self.currentClients)
+			#print (self.chatrooms)
 			print (self.chatrooms['general'].currentClients)
 
 
@@ -137,18 +140,18 @@ class ServerControl(object):
 			self.currentClients.pop(currentchatroomname)
 
 	# This creates a new chatroom if the name is not taken and assigns the client who issued the command as the admin.
-	def createchatroom(self, clientIP, chatroomName, client):
+	def createchatroom(self, clientIP, chatroomName, socketobject):
 	
 		# This checks if the chatroom name is taken.
 		if(self.getChatroom(chatroomName) != None):
 			return
 		
-		newChatroom = Chatroom(clientIP,chatroomName, client)
+		newChatroom = Chatroom(clientIP, chatroomName, socketobject)
 		self.chatrooms[chatroomName] = newChatroom
 		return
 
 	# This deletes a chatroom if it's not General and the client trying to delete it is the admin.
-	def deletechatroom(self, clientIP, chatroomName, client):
+	def deletechatroom(self, clientIP, chatroomName):
 
 		chatroom = self.getChatroom(chatroomName)
 		if self.isAdmin(clientIP,chatroom):
@@ -169,7 +172,7 @@ class ServerControl(object):
 		return
 
 	# This sets a client's alias
-	def setalias(self,clientIP,newAlias, client):
+	def setalias(self, clientIP, newAlias):
 
 		#check if not in the master list of aliases
 		oldAlias = self.currentClients[clientIP][1]
@@ -186,10 +189,15 @@ class ServerControl(object):
 		else:
 			print("alias is in use!")
 
-	def parseinput(self, message, address, client):
+	def parseinput(self, message, address, socketobject):
 
-		# I don't want to do a bunch of elifs
+
+
+		#client is the socket obj of the connection
+
+
 		command = ''
+		arguement = message.split(' ', 1)[1]
 		if message.startswith('/'):
 			command = message.split(' ', 1)[0]
 			print (command)
@@ -201,7 +209,7 @@ class ServerControl(object):
 			print("no command found")
 
 			if address not in self.currentClients:
-				print "please connect to general first"
+				print ("please connect to general first")
 
 			else:
 				chatroom = self.getChatroom(self.currentClients[address][0])
@@ -209,42 +217,41 @@ class ServerControl(object):
 				clientlist = chatroom.currentClients
 
 
-			self.sendmessage(message, clientlist, chatroom.name, alias)
+				self.sendmessage(message,clientlist,chatroom.name,alias)
 
 			return
 
 
+		if command == '/create':
+			self.createchatroom(address, arguement, socketobject)
 
-		options = {
-			'/create': self.createchatroom,
-			'/delete': self.deletechatroom,
-			'/connect': self.connectuser,
-			'/set_alias': self.setalias
-		}[command](address, message.split(' ',1)[1], client)
+		elif command == '/delete':
+			self.deletechatroom(address, arguement, socketobject)
+		elif command == '/connect':
+			self.connectuser(address, arguement, socketobject)
+		elif command == '/set_alias':
+			self.setalias(address, arguement, socketobject)
+		elif command == '/block':
+			self.blockuser(address, arguement, message.split(' ', 1)[2])
+		elif command == '/unblock':
+			self.unblockuser(address, arguement, message.split(' ', 1)[2])
 
-		if 'block' in command:
-			blocks = {
 
-			'/block' : self.blockuser,
-			'/unblock' : self.unblockuser
-			}[command](address, message.split(' ', 1)[1], message.split(' ', 1)[2])
-
-		return
 
 
 	def listen(self):
 
-		print("1")
+		print("Server has started, waiting for connection")
 		while True:
-			client, address = self.s.accept()
+			socketobject, address = self.s.accept()
 			print("Found a new connection")
 
-			client.settimeout(60)
+			socketobject.settimeout(60)
 			print("spawning a thread")
 
-			thread = threading.Thread(target = self.controlloop, args = (client, address))
+			thread = threading.Thread(target = self.controlloop, args = (socketobject, address))
 			thread.start()
-	def controlloop(self, client, address):
+	def controlloop(self, socketobject, address):
 		# type: () -> object
 
 		#address[0] = local IP
@@ -252,15 +259,15 @@ class ServerControl(object):
 		#message = message obviously
 		#self.generalChatroom.addUser(client)
 		while True:
-			print("2")
+
 			sys.stdout.flush()
-			message = client.recv(1024)
+			message = socketobject.recv(1024)
 
 
 			print ('%s:%s says >> %s' % (address[0], address[1], message))
 
 			if message is not None:
-				self.parseinput(message, address, client)
+				self.parseinput(message, address, socketobject)
 				print("inside of loop, waiting for input")
 
 			print ("outside of loop")

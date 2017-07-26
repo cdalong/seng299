@@ -7,6 +7,7 @@ Software Engineering 299 (Development Methods) Uvic Summer 2017
 -- clean up arguments to methods
 -- scrap the 'switch' statement
 -- fix /block /unblock
+-- adding to chatrooms
 -- add the regex parser?
 -- error handling
 -- Feedback from server (helpful state messages)
