@@ -25,14 +25,12 @@ class Chatroom(GeneralChatroom):
 			else:
 				self.admin = None
 		
-	def blockUser(self, userSocket, blkrSocket):
-		
-		if blkrSocket == self.adminSocket:
-			if userSocket in self.currentClients:
-				self.blockedUsers[userSocket] = self.currentClients[userSocket]
+	def blockUser(self, userSocket):
+
+		if userSocket in self.currentClients:
+			self.blockedUsers[userSocket] = self.currentClients[userSocket]
 				
-	def unblockUser(self, userSocket, unblkrSocket):
-		
-		if unblkrSocket == self.adminSocket:
+	def unblockUser(self, userSocket):
+
 			if userSocket in self.blockedUsers:
 				del self.blockedUsers[userSocket]

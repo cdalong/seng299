@@ -34,7 +34,7 @@ class ServerControl(object):
 
 		self.generalChatroom = GeneralChatroom()
 
-		self.currentClients = {} #a dictionary of ClientSocket:[chatroom name, alias]
+		self.currentClients = {} #a dictionary of ClientAddress:[chatroom name, alias]
 		self.chatrooms = {} #dictionary of chatroom name: chatroom object
 		self.currentaliases = [] #list of current aliases used by the clients
 		self.chatrooms['general'] = self.generalChatroom
@@ -194,23 +194,24 @@ class ServerControl(object):
 		return
 
 	# This blocks a user from a chatroom if it's not General, the admin is trying to ban someone and they are not bannign themselves.
-	def blockuser(self, clientSocket, bannedAlias):
-	
+	def blockuser(self, clientAddress, clientSocket, bannedAlias):
+		#there's probably a better way to do this
 		bannedSocket = None
 		for i in self.currentClients:
-			if i[1] == bannedAlias:
-				bannedSocket = i
+			if self.currentClients[i][1] == bannedAlias:
+				bannedSocket = self.currentClients[i][2]
+				bannedAddress = i
 				break
 		if bannedSocket == None:
 			clientSocket.sendall('Error: alias not found.')
 			return
 	
-		chatroomName = self.currentClients[clientSocket][0]
+		chatroomName = self.currentClients[clientAddress][0]
 		chatroom = self.getChatroom(chatroomName)
 		if self.isAdmin(clientSocket,chatroom) and clientSocket != bannedSocket:
 			chatroom.blockUser(bannedSocket)
-			chatroom.disconnectuser(bannedSocket)
-			chatroom.connectuser(bannedSocket,'general')
+			chatroom.removeUser(bannedSocket)
+			self.connectuser(bannedAddress, 'general', bannedSocket)
 			bannedSocket.sendall('You have been banned from %s' % (chatroomName))
 			clientSocket.sendall('You have banned %s from %s' % (bannedAlias,chatroomName))
 		
@@ -304,9 +305,9 @@ class ServerControl(object):
 		elif command == '/set_alias':
 			self.setalias(clientAddress, arguement)
 		elif command == '/block':
-			self.blockuser(clientAddress, arguement, message.split(' ', 1)[2])
+			self.blockuser(clientAddress, clientSocket, arguement)
 		elif command == '/unblock':
-			self.unblockuser(clientAddress, arguement, message.split(' ', 1)[2])
+			self.unblockuser(clientAddress,clientSocket, arguement)
 
 
 
