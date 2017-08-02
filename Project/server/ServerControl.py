@@ -126,18 +126,22 @@ class ServerControl(object):
 
 		elif chatroomName in self.chatrooms:
 
-
-			#remove from old list of users
 			oldChatroomName = self.currentClients[clientAddress][0]
-			
-			oldChatroom = self.getChatroom(oldChatroomName) #find the chatroom name and remove them
+
+			oldChatroom = self.getChatroom(oldChatroomName)  # find the chatroom name and remove them
+			newChatroom = self.getChatroom(chatroomName)
+			self.currentClients[clientAddress][0] = chatroomName
+
+			if chatroomName is not 'general'and clientSocket in newChatroom.blockedUsers:
+				clientSocket.sendall("You have been blocked from this room! talk to an Admin!")
+				return
+			#remove from old list of users
+
 			oldChatroom.removeUser(clientSocket)
 
 			#add to new chatroom list of users
-			newChatroom = self.getChatroom(chatroomName)
-			self.currentClients[clientAddress][0] = chatroomName
-			newChatroom.addUser(clientSocket)
-			
+
+
 			print (self.currentClients)
 			print (self.chatrooms)
 			print (self.chatrooms['general'].currentClients)
@@ -220,7 +224,7 @@ class ServerControl(object):
 		return
 
 	# This unblocks a user if it's not General and the admin is trying to unblock someone.
-	def unblockuser(self, clientSocket, bannedAlias):
+	def unblockuser(self, clientAddress, clientSocket, bannedAlias):
 
 		bannedSocket = None
 		for i in self.currentClients:
@@ -232,7 +236,7 @@ class ServerControl(object):
 			clientSocket.sendall('Error: alias not found.')
 			return
 	
-		chatroomName = self.currentClients[clientSocket][0]
+		chatroomName = self.currentClients[clientAddress][0]
 		chatroom = self.getChatroom(chatroomName)
 		
 		if self.isAdmin(clientSocket,chatroom):
@@ -309,6 +313,9 @@ class ServerControl(object):
 			self.blockuser(clientAddress, clientSocket, arguement)
 		elif command == '/unblock':
 			self.unblockuser(clientAddress,clientSocket, arguement)
+
+		elif command =='/join':
+			self.connectuser(clientAddress, arguement, clientSocket)
 
 
 
