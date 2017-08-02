@@ -221,11 +221,12 @@ class ServerControl(object):
 
 	# This unblocks a user if it's not General and the admin is trying to unblock someone.
 	def unblockuser(self, clientSocket, bannedAlias):
-	
+
 		bannedSocket = None
 		for i in self.currentClients:
-			if i[1] == bannedAlias:
-				bannedSocket = i
+			if self.currentClients[i][1] == bannedAlias:
+				bannedSocket = self.currentClients[i][2]
+				bannedAddress = i
 				break
 		if bannedSocket == None:
 			clientSocket.sendall('Error: alias not found.')
