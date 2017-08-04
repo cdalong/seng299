@@ -1,13 +1,8 @@
 # seng299
 Software Engineering 299 (Development Methods) Uvic Summer 2017
 
+to launch the server:
+python ServerControl.py
 
-#TODO
-
--- clean up arguments to methods
--- scrap the 'switch' statement
--- fix /block /unblock
--- adding to chatrooms
--- add the regex parser?
--- error handling
--- Feedback from server (helpful state messages)
+to launch a client:
+python client.py
